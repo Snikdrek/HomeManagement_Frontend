@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Expense Calculator</title>
+    <link rel="stylesheet" href="electricity.css">
+</head>
+<body>
+    <header>
+        <h1 class="title">Electricity Expense Calculator</h1>
+        <p class="subtitle">Track your electricity consumption and estimate costs</p>
+    </header>
+
+    <div class="container">
+        <div class="navigation">
+            <a href="index.html" class="btn">Back to Home</a>
+        </div>
+
+        <div class="calculator-container">
+            <h2 class="section-title">Add Rooms and Devices</h2>
+
+            <div id="rooms-container">
+                <!-- Room template will be added here dynamically -->
+            </div>
+
+            <button id="add-room-btn" class="btn">Add New Room</button>
+
+            <div class="input-group">
+                <label for="unit-cost">Unit Cost (Taka)</label>
+                <input type="number" id="unit-cost" step="0.01" min="0" value="5.00">
+            </div>
+
+            <div class="time-period">
+                <label>
+                    <input type="radio" name="time-period" value="daily" checked> Daily
+                </label>
+                <label>
+                    <input type="radio" name="time-period" value="monthly"> Monthly
+                </label>
+                <label>
+                    <input type="radio" name="time-period" value="yearly"> Yearly
+                </label>
+            </div>
+
+            <div class="actions">
+                <button id="calculate-btn" class="btn">Calculate Expense</button>
+                <button id="reset-btn" class="btn btn-danger">Reset</button>
+            </div>
+
+            <div id="result-container" class="result-container hidden">
+                <h3>Estimated Electricity Expense</h3>
+                <div id="result-value" class="result-value">0.00 Taka</div>
+                <p id="result-period">per day</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 Expense Tracker | All Rights Reserved</p>
+    </footer>
+
+    <!-- Room Template (Hidden) -->
+    <template id="room-template">
+        <div class="room-container">
+            <div class="room-header">
+                <input type="text" class="room-name" placeholder="Room Name (e.g. Living Room)">
+                <button class="btn btn-danger btn-small remove-room-btn">Remove Room</button>
+            </div>
+
+            <div class="devices-container">
+                <!-- Devices will be added here -->
+            </div>
+
+            <button class="btn btn-small add-device-btn">Add Device</button>
+        </div>
+    </template>
+
+    <!-- Device Template (Hidden) -->
+    <template id="device-template">
+        <div class="device-item">
+            <input type="text" class="device-name" placeholder="Device Name (e.g. TV)">
+            <input type="number" class="device-power" placeholder="Power (Watts)" min="0" step="1">
+            <input type="number" class="device-hours" placeholder="Hours per day" min="0" max="24" step="0.5">
+            <input type="number" class="device-quantity" placeholder="Quantity" min="1" step="1" value="1">
+            <button class="btn btn-danger btn-small remove-device-btn">✕</button>
+        </div>
+    </template>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roomsContainer = document.getElementById('rooms-container');
+            const addRoomBtn = document.getElementById('add-room-btn');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultValue = document.getElementById('result-value');
+            const resultPeriod = document.getElementById('result-period');
+            const unitCostInput = document.getElementById('unit-cost');
+            const roomTemplate = document.getElementById('room-template');
+            const deviceTemplate = document.getElementById('device-template');
+            const timePeriodRadios = document.querySelectorAll('input[name="time-period"]');
+
+            addRoom();
+
+            addRoomBtn.addEventListener('click', addRoom);
+            calculateBtn.addEventListener('click', calculateExpense);
+            resetBtn.addEventListener('click', resetCalculator);
+
+            function addRoom() {
+                const roomElement = document.importNode(roomTemplate.content, true);
+                const roomContainer = roomElement.querySelector('.room-container');
+                const addDeviceBtn = roomElement.querySelector('.add-device-btn');
+                const removeRoomBtn = roomElement.querySelector('.remove-room-btn');
+
+                addDeviceBtn.addEventListener('click', function() {
+                    addDevice(roomContainer.querySelector('.devices-container'));
+                });
+
+                removeRoomBtn.addEventListener('click', function() {
+                    roomsContainer.removeChild(roomContainer);
+                });
+
+                addDevice(roomElement.querySelector('.devices-container'));
+                roomsContainer.appendChild(roomElement);
+            }
+
+            function addDevice(devicesContainer) {
+                const deviceElement = document.importNode(deviceTemplate.content, true);
+                const deviceItem = deviceElement.querySelector('.device-item');
+                const removeDeviceBtn = deviceElement.querySelector('.remove-device-btn');
+
+                removeDeviceBtn.addEventListener('click', function() {
+                    devicesContainer.removeChild(deviceItem);
+                });
+
+                devicesContainer.appendChild(deviceElement);
+            }
+
+            function calculateExpense() {
+                const unitCost = parseFloat(unitCostInput.value) || 0;
+                let totalKWh = 0;
+                let timePeriod = 'daily';
+                let multiplier = 1;
+
+                timePeriodRadios.forEach(radio => {
+                    if (radio.checked) {
+                        timePeriod = radio.value;
+                        resultPeriod.textContent =
+                            timePeriod === 'monthly' ? 'per month' :
+                            timePeriod === 'yearly' ? 'per year' : 'per day';
+                        multiplier = timePeriod === 'monthly' ? 30 : timePeriod === 'yearly' ? 365 : 1;
+                    }
+                });
+
+                const rooms = document.querySelectorAll('.room-container');
+                rooms.forEach(room => {
+                    const devices = room.querySelectorAll('.device-item');
+                    devices.forEach(device => {
+                        const power = parseFloat(device.querySelector('.device-power').value) || 0;
+                        const hours = parseFloat(device.querySelector('.device-hours').value) || 0;
+                        const quantity = parseInt(device.querySelector('.device-quantity').value) || 1;
+                        totalKWh += (power * hours * quantity) / 1000;
+                    });
+                });
+
+                const totalCost = totalKWh * unitCost * multiplier;
+                resultValue.textContent = totalCost.toFixed(2) + ' Taka';
+                resultContainer.classList.remove('hidden');
+            }
+
+            function resetCalculator() {
+                while (roomsContainer.firstChild) roomsContainer.removeChild(roomsContainer.firstChild);
+                addRoom();
+                unitCostInput.value = "5.00";
+                timePeriodRadios[0].checked = true;
+                resultPeriod.textContent = 'per day';
+                resultContainer.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

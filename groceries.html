@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groceries Expense Tracker</title>
+    <link rel="stylesheet" href="groceries.css">
+    <style>
+        /* You can paste your groceries.css content here if you want a fully standalone file */
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="title">Groceries Expense Tracker</h1>
+        <p class="subtitle">Track and manage your grocery expenses</p>
+    </header>
+    
+    <div class="container">
+        <div class="navigation">
+            <a href="index.html" class="btn">Back to Home</a>
+        </div>
+        
+        <div class="tracker-container">
+            <h2 class="section-title">Add Grocery Items</h2>
+            
+            <div class="add-grocery-form">
+                <div class="input-group">
+                    <label for="item-name">Item Name</label>
+                    <input type="text" id="item-name" placeholder="e.g. Rice, Milk, Vegetables">
+                </div>
+                
+                <div class="input-group">
+                    <label for="item-quantity">Quantity</label>
+                    <input type="number" id="item-quantity" min="0.1" step="0.1" value="1">
+                </div>
+                
+                <div class="input-group unit-selection">
+                    <label for="item-unit">Unit</label>
+                    <select id="item-unit">
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="liter">Liter</option>
+                        <option value="piece">Piece</option>
+                        <option value="dozen">Dozen</option>
+                        <option value="packet">Packet</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="item-price">Price (Taka)</label>
+                    <input type="number" id="item-price" min="0" step="0.01">
+                </div>
+                
+                <div class="input-group">
+                    <button id="add-item-btn" class="btn btn-success">Add Item</button>
+                </div>
+            </div>
+            
+            <div id="status-message" class="status-message hidden"></div>
+            
+            <div class="grocery-list">
+                <h3 class="section-title">Grocery List</h3>
+                
+                <table id="grocery-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Price per Unit</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grocery-items">
+                        <!-- Grocery items will be added here -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="4" class="text-right">Grand Total:</td>
+                            <td id="grand-total">0.00 Taka</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <div class="actions">
+                    <button id="save-list-btn" class="btn">Save List</button>
+                    <button id="clear-list-btn" class="btn btn-danger">Clear List</button>
+                </div>
+            </div>
+            
+            <div id="summary-container" class="summary-container hidden">
+                <h3>Grocery Expense Summary</h3>
+                <div id="summary-total" class="summary-value">0.00 Taka</div>
+                <p>Total Items: <span id="summary-items">0</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2025 Expense Tracker | All Rights Reserved</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const addItemBtn = document.getElementById('add-item-btn');
+            const itemNameInput = document.getElementById('item-name');
+            const itemQuantityInput = document.getElementById('item-quantity');
+            const itemUnitInput = document.getElementById('item-unit');
+            const itemPriceInput = document.getElementById('item-price');
+            const groceryItemsContainer = document.getElementById('grocery-items');
+            const grandTotalDisplay = document.getElementById('grand-total');
+            const summaryContainer = document.getElementById('summary-container');
+            const summaryTotal = document.getElementById('summary-total');
+            const summaryItems = document.getElementById('summary-items');
+            const clearListBtn = document.getElementById('clear-list-btn');
+
+            let groceryList = [];
+
+            function updateDisplay() {
+                groceryItemsContainer.innerHTML = '';
+                let grandTotal = 0;
+
+                groceryList.forEach((item, index) => {
+                    const itemTotal = item.quantity * item.price;
+                    grandTotal += itemTotal;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.unit}</td>
+                        <td>${item.price.toFixed(2)}</td>
+                        <td>${itemTotal.toFixed(2)} Taka</td>
+                        <td><button class="btn btn-danger" data-index="${index}">Delete</button></td>
+                    `;
+                    groceryItemsContainer.appendChild(row);
+                });
+
+                grandTotalDisplay.textContent = `${grandTotal.toFixed(2)} Taka`;
+                summaryTotal.textContent = `${grandTotal.toFixed(2)} Taka`;
+                summaryItems.textContent = groceryList.length;
+                summaryContainer.classList.toggle('hidden', groceryList.length === 0);
+            }
+
+            addItemBtn.addEventListener('click', () => {
+                const name = itemNameInput.value.trim();
+                const quantity = parseFloat(itemQuantityInput.value);
+                const unit = itemUnitInput.value;
+                const price = parseFloat(itemPriceInput.value);
+
+                if (!name || isNaN(quantity) || isNaN(price) || quantity <= 0 || price < 0) {
+                    alert("Please enter valid item details.");
+                    return;
+                }
+
+                groceryList.push({ name, quantity, unit, price });
+                updateDisplay();
+
+                itemNameInput.value = '';
+                itemQuantityInput.value = 1;
+                itemPriceInput.value = '';
+            });
+
+            groceryItemsContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON' && e.target.dataset.index !== undefined) {
+                    const index = parseInt(e.target.dataset.index);
+                    groceryList.splice(index, 1);
+                    updateDisplay();
+                }
+            });
+
+            clearListBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear the list?')) {
+                    groceryList = [];
+                    updateDisplay();;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
