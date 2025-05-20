@@ -1,7 +1,7 @@
 :root {
-    --primary-color: #8ecae6;
-    --secondary-color: #219ebc;
-    --accent-color: #023047;
+    --primary-color: #1578db;
+    --secondary-color: #0c847e;
+    --accent-color: #0e2f3f;
     --light-bg: #f8f9fa;
     --white: #ffffff;
     --light-gray: #e9ecef;
@@ -74,7 +74,7 @@ header {
 }
 
 .calculator-container {
-    background-color: var(--white);
+    background-color: var(--black);
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 2rem;
