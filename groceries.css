@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #8ecae6;
+    --primary-color: #d38ee6;
     --secondary-color: #219ebc;
     --accent-color: #023047;
     --light-bg: #f8f9fa;
@@ -23,7 +23,7 @@ body {
 }
 
 header {
-    background-color: var(--secondary-color);
+    background-color: rgb(204, 17, 186);
     color: var(--white);
     padding: 1.5rem 0;
     text-align: center;
@@ -55,7 +55,7 @@ header {
 
 .btn {
     display: inline-block;
-    background-color: var(--secondary-color);
+    background-color: rgb(211, 106, 222);
     color: var(--white);
     padding: 0.6rem 1.2rem;
     border-radius: 30px;
